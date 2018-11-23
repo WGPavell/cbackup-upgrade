@@ -1,0 +1,19 @@
+{
+  "name": "launcherx/yii2-widget-cronui",
+  "description": "Widget for generating cron string",
+  "keywords": ["yii2", "extension", "widget", "bootstrap", "cron", "cronui", "form", "jquery", "plugin"],
+  "type": "yii2-extension",
+  "license": "MIT License",
+  "authors": [
+    {
+      "name": "Imants Cernovs",
+      "email": "imantscernovs@inbox.lv"
+    }
+  ],
+  "require": {
+      "bootstrap-select/bootstrap-select": "*"
+  },
+  "autoload": {
+      "psr-4": {"launcherx\\cronui\\": ""}
+  }
+}

@@ -1,0 +1,23 @@
+{
+    "name": "cbackup/yii2-group-grid-view",
+    "description": "GridView Extensions that groups rows by any column(s) for Yii2.",
+    "version": "0.2.1",
+    "keywords": ["yii", "yii2", "extension", "widget", "grid", "groupgridview", "groupgrid"],
+    "type": "yii2-extension",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Antonio Ramirez",
+            "email": "ramirez.cobos@gmail.com",
+            "homepage": "http://2amigos.us"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "cbackup\\grid\\": ""
+        }
+    }
+}

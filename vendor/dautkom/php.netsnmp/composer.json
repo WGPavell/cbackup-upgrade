@@ -1,0 +1,23 @@
+{
+  "name": "dautkom/php.netsnmp",
+  "description": "SNMP wrapper library",
+  "version": "1.0.1",
+  "type": "library",
+  "keywords": ["snmp","netsnmp","net-snmp"],
+  "license": "MIT",
+  "require": {
+    "php": ">=7.0.0",
+    "ext-snmp": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "dautkom\\netsnmp\\": ""
+    }
+  },
+  "authors": [
+    {
+      "name": "Oļegs Čapligins",
+      "email": "shader@dautkom.lv"
+    }
+  ]
+}
