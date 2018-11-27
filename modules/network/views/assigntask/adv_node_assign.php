@@ -53,19 +53,19 @@ $this->registerJs(
            allowClear: true,
            width : '100%'
        });
-       
+
        /** Select2 with search */
        $('.select2-search').select2({
            width : '100%'
        });
-       
+
        /** Select with minimum and clear init */
        $('.select2-min').select2({
            minimumInputLength: 4,
            allowClear: true,
            width: '100%'
        });
-       
+
        /** Node search form submit and reload gridview */
         $('.node-search-form form').submit(function(e) {
             e.stopImmediatePropagation(); // Prevent double submit
@@ -73,17 +73,17 @@ $this->registerJs(
             $.pjax.reload({container:'#node-pjax', url: window.location.pathname + '?' + $(this).serialize(), timeout: 10000}); // Reload GridView
             return false;
         });
-        
+
         /** Init JS on document:ready and pjax:end */
         $(document).on('ready pjax:end', function() {
-            
+
             /** Init iCheck */
-            $('.set-node-box').iCheck({ 
+            $('.set-node-box').iCheck({
                 checkboxClass: 'icheckbox_minimal-green'
             }).on('ifChanged', function (event) {
                 $(event.target).trigger('change');
             });
-            
+
             /** Check/uncheck all nodes on page */
             $('#check_all_box').change(function() {
                 if ($('#check_all_box').is(':checked')) {
@@ -102,16 +102,16 @@ $this->registerJs(
                     $('#check_all_box').prop('checked', false).iCheck('update');
                 }
             }).change();
-            
+
         });
-        
+
         /** Submit assign form */
         $(document).on('submit', '#assign_form', function (e) {
             e.stopImmediatePropagation(); // Prevent double submit
-            
+
             var form     = $(this);
             var btn_lock = Ladda.create(document.querySelector('#assign_btn'));
-            
+
             //noinspection JSUnusedGlobalSymbols
             /** Submit form */
             $.ajax({
@@ -135,10 +135,10 @@ $this->registerJs(
             }).always(function(){
                 btn_lock.stop();
             });
-            
+
             return false;
         });
-        
+
     "
 );
 ?>
@@ -198,7 +198,7 @@ $this->registerJs(
                                                 <?php
                                                     echo Html::hiddenInput("NodeTasks[{$node['id']}][task_name]", $searchModel->task_name);
                                                     echo Html::hiddenInput("NodeTasks[{$node['id']}][set_node]", '0');
-                                                    echo Html::checkbox("NodeTasks[{$node['id']}][set_node]", $node['node_has_task'],[
+                                                    echo Html::checkbox("NodeTasks[{$node['id']}][set_node]", $nodeHasTasks[$node['id']],[
                                                        'class' => 'set-node-box check_node_box'
                                                     ]);
                                                 ?>

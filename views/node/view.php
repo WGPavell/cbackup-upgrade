@@ -51,6 +51,7 @@ $empty_task  = [false, false]; // empty array for defining empty task tab
 $this->title = Yii::t('node', 'Node') . ' ' . $title;
 $this->params['breadcrumbs'][] = ['label' => Yii::t('node', 'Nodes'), 'url' => ['/node']];
 $this->params['breadcrumbs'][] = $this->title;
+$user = Yii::$app->getUser();
 ?>
 <div class="row">
     <div class="col-md-6">
@@ -59,6 +60,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <div class="box-header with-border">
                     <i class="fa fa-globe"></i>
                     <h3 class="box-title"><?= Yii::t('node', 'Node information') ?></h3>
+                    <?php if($user->can('admin')): ?>
                     <div class="box-tools pull-right">
                         <div class="btn-group">
                             <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -113,6 +115,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             </ul>
                         </div>
                     </div>
+                  <?php endif; ?>
                 </div>
                 <table class="table node-info">
                     <tr>
@@ -149,7 +152,8 @@ $this->params['breadcrumbs'][] = $this->title;
                     </tr>
                     <tr>
                         <th>
-                            <?= Yii::t('app', 'Credentials') . Html::a(' <i class="fa fa-pencil-square-o"></i>', 'javascript:void(0);', ['id' => 'open_select']); ?>
+                            <?= Yii::t('app', 'Credentials'); ?>
+                            <?php if($user->can('admin')) echo Html::a(' <i class="fa fa-pencil-square-o"></i>', 'javascript:void(0);', ['id' => 'open_select']); ?>
                         </th>
                         <td>
                             <div id="credentials_text">
@@ -166,8 +170,10 @@ $this->params['breadcrumbs'][] = $this->title;
                                     if (!is_null($data->credential_id)) {
                                         $credential_text = $data->credential->name;
                                     }
-
-                                    echo Html::a($credential_text, 'javascript:void(0);', ['id' => 'show_credentials_tab']);
+                                    if ($user->can('admin'))
+                                      echo Html::a($credential_text, 'javascript:void(0);', ['id' => 'show_credentials_tab']);
+                                    else
+                                      echo $credential_text;
                                 ?>
                             </div>
                             <div id="credentials_select" class="hidden">
@@ -242,7 +248,8 @@ $this->params['breadcrumbs'][] = $this->title;
                     </tr>
                     <tr>
                         <th>
-                            <?= Yii::t('network', 'Prepend location') . Html::a(' <i class="fa fa-pencil-square-o"></i>', 'javascript:void(0);', ['id' => 'open_input']); ?>
+                            <?= Yii::t('network', 'Prepend location'); ?>
+                            <?php if($user->can('admin')) echo Html::a(' <i class="fa fa-pencil-square-o"></i>', 'javascript:void(0);', ['id' => 'open_input']); ?>
                         </th>
                         <td>
                             <div id="prepend_location_text">
@@ -719,7 +726,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <div id="nav_tabs" class="nav-tabs-custom">
             <ul class="nav nav-tabs tabs-scroll disable-multirow">
                 <li class="active"><a href="#backup_tab" data-toggle="tab"><?= Yii::t('node', 'Actual configuration backup') ?></a></li>
-                <li><a href="#ospf_backup_tab" data-toggle="tab"><?= Yii::t('node', 'Actual ospf backup') ?></a></li>
+                <!--<li><a href="#ospf_backup_tab" data-toggle="tab"><?= Yii::t('node', 'Actual ospf backup') ?></a></li>-->
                 <?php foreach ($plugins as $plugin): ?>
                     <?php if ($plugin->plugin_params['widget_enabled'] == '1'): ?>
                         <li>
@@ -895,7 +902,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     </div>
                 </div>
 
-                <div class="tab-pane table-responsive" id="ospf_backup_tab">
+                <!--<div class="tab-pane table-responsive" id="ospf_backup_tab">
                     <?php if (!empty($data->outOspfBackups)): ?>
                         <table class="table table-bordered" style="margin-bottom: 0;">
                             <tr>
@@ -1048,7 +1055,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>-->
 
                 <?php foreach ($plugins as $plugin): ?>
                     <?php if ($plugin->plugin_params['widget_enabled'] == '1'): ?>
@@ -1183,4 +1190,3 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
     </div>
 <?php endif; ?>
-

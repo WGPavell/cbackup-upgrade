@@ -4,3 +4,4 @@ bin/hostKey.ser
 config/db.php
 config/install.php
 config/settings.ini
+data/

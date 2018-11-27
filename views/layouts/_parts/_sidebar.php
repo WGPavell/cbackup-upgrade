@@ -54,15 +54,16 @@ use app\models\Plugin;
              * @return array
              */
             $renderPluginMenu = function () {
-
+                $user = Yii::$app->getUser();
                 $menu    = [];
-                $plugins = Yii::$app->cache->getOrSet('pluginmenu', function() {
-                    $data = Plugin::find()->where(['enabled' => '1'])->all();
-                    array_walk($data, function($object) {
-                        $object->plugin_params += ['translated_name' => $object->plugin::t('general', Inflector::humanize($object->attributes['name']))];
-                    });
-                    return $data;
-                });
+                if($user->can('admin'))
+                  $plugins = Yii::$app->cache->getOrSet('pluginmenu', function() {
+                      $data = Plugin::find()->where(['enabled' => '1'])->all();
+                      array_walk($data, function($object) {
+                          $object->plugin_params += ['translated_name' => $object->plugin::t('general', Inflector::humanize($object->attributes['name']))];
+                      });
+                      return $data;
+                  });
 
                 /** Display menu only if plugins were found */
                 if (!empty($plugins)) {
@@ -110,18 +111,26 @@ use app\models\Plugin;
                     [
                         'label'   => '<i class="fa fa-dashboard"></i> <span>'.Yii::t('app', 'Dashboard').'</span>',
                         'url'     => Yii::$app->homeUrl,
-                        'active'  => $checkRoute(['site/index']),
+                        'active'  => $checkRoute(['site/index'])
+                    ],
+                    [
+                        'label'   => '<i class="fa fa-tasks"></i> <span>'.Yii::t('node', 'Nodes').'</span>',
+                        'url'     => ['/node/list'],
+                        'active'  => $checkRoute(['node/view', 'node/list', 'node/add', 'node/edit', 'network/exclusion/list', 'network/exclusion/list', 'network/exclusion/add', 'network/exclusion/edit']),
+                        'visible' => !$user->can('admin'),
                     ],
                     [
                         'label'           => '<i class="fa fa-tasks"></i> <span>'.Yii::t('node', 'Nodes').'</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>',
                         'url'             => ['/node/list'],
                         'options'         => ['class' => 'treeview'],
                         'active'          => $checkRoute(['node/view', 'node/list', 'node/add', 'node/edit', 'network/exclusion/list', 'network/exclusion/list', 'network/exclusion/add', 'network/exclusion/edit']),
+                        'visible'          => $user->can('admin'),
                         'items' => [
                             [
                                 'label' => Yii::t('app', 'List'),
                                 'url'   => ['/node/list'],
                                 'active'  => $checkRoute(['node/list']),
+                                'visible' => $user->can('admin'),
                             ],
                             [
                                 'label'   => '',
@@ -145,6 +154,7 @@ use app\models\Plugin;
                         'label'           => '<i class="fa fa-list"></i> <span>'.Yii::t('app', 'Logs').'</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>',
                         'url'             => ['/log'],
                         'options'         => ['class' => 'treeview'],
+                        'visible'         => $user->can('admin'),
                         'items' => [
                             [
                                 'label'   => Yii::t('app', 'System'),
@@ -176,6 +186,7 @@ use app\models\Plugin;
                         'label'    => '<i class="fa fa-wrench"></i> <span>'.Yii::t('app', 'Inventory').'</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>',
                         'url'      => ['/network/subnet/list'],
                         'options'  => ['class' => 'treeview'],
+                        'visible'  => $user->can('admin'),
                         'items'    => [
                             [
                                 'label'   => Yii::t('app', 'Subnets'),
@@ -220,6 +231,7 @@ use app\models\Plugin;
                         'label'    => '<i class="fa fa-refresh"></i> <span>'.Yii::t('app', 'Processes').'</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>',
                         'url'      => ['/'],
                         'options'  => ['class' => 'treeview'],
+                        'visible'  => $user->can('admin'),
                         'items'    => [
                             [
                                 'label'   => Yii::t('app', 'Tasks'),
@@ -301,6 +313,7 @@ use app\models\Plugin;
                         'label'           => '<i class="fa fa-database"></i> <span>'.Yii::t('app', 'System').'</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>',
                         'url'             => ['/'],
                         'options'         => ['class' => 'treeview'],
+                        'visible'         => $user->can('admin'),
                         'items' => [
                             [
                                 'label'  => Yii::t('app', 'System settings'),

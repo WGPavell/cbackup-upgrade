@@ -20,6 +20,8 @@
 use yii\helpers\Html;
 use app\helpers\StringHelper;
 use app\widgets\MessageWidget;
+
+$user = Yii::$app->getUser();
 ?>
 <header class="main-header">
     <a href="<?= Yii::$app->homeUrl ?>" class="logo">
@@ -36,6 +38,7 @@ use app\widgets\MessageWidget;
         </a>
 
         <ul class="nav navbar-nav pull-right">
+            <?php if($user->can('admin')): ?>
             <li class="dropdown notifications-menu">
                 <?php
                     echo Html::a('<i class="fa fa-hdd-o"></i>', 'javascript:void(0);', [
@@ -65,9 +68,11 @@ use app\widgets\MessageWidget;
                     <li id="widget_content"></li>
                 </ul>
             </li>
+            <?php endif; ?>
             <?php
-                /** @noinspection PhpUnhandledExceptionInspection */
-                echo MessageWidget::widget();
+                if($user->can('admin'))
+                  /** @noinspection PhpUnhandledExceptionInspection */
+                  echo MessageWidget::widget();
             ?>
             <li class="dropdown classic-menu-dropdown">
                 <a href="javascript:" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">

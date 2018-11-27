@@ -536,11 +536,17 @@ class Node extends ActiveRecord
       return $this->hasMany(AuthItemNode::className(), ['node_id' => 'id']);
     }
 
-    public function isUserAllowed($node_id, $roles) {
+    public function isUserAllowed($node_id) {
       $roles_names = [];
-      foreach($roles as $role){
-           $roles_names[] = $role->name;
+      foreach(Yii::$app->authManager->getRolesByUser(Yii::$app->user->getId()) as $role) {
+           foreach(Yii::$app->authManager->getChildRoles($role->name) as $child_role) {
+             if(!in_array($child_role->name,$roles_names))
+              $roles_names[] = $child_role->name;
+           }
       }
+      foreach(Yii::$app->authManager->getPermissionsByUser(Yii::$app->user->getId()) as $permission)
+        $roles_names[] = $permission->name;
+
       $getPermission = (new Query())
           ->select(['auth_item_name'])
           ->from('{{auth_item_node}}')

@@ -20,6 +20,8 @@
 use yii\helpers\Html;
 use yii\bootstrap\ActiveForm;
 use app\helpers\FormHelper;
+use yii\widgets\Pjax;
+
 
 /**
  * @var $this        yii\web\View
@@ -30,6 +32,7 @@ use app\helpers\FormHelper;
  * @var $devices     array
  */
 app\assets\Select2Asset::register($this);
+app\assets\LaddaAsset::register($this);
 
 /** @noinspection PhpUndefinedFieldInspection */
 $action      = $this->context->action->id;
@@ -59,18 +62,18 @@ $this->registerJs(
         $('.select2').select2({
             width: '100%'
         });
-        
+
         /** Init select2 with clear */
         $('.select2-clear').select2({
             allowClear: true,
             width: '100%'
         });
-        
+
         $('#snmp_inquire').click(function() {
-            
+
             var btn = $(this);
             btn.button('loading');
-            
+
             //noinspection JSUnresolvedVariable
             $.ajax({
                 url:      ajaxUrl,
@@ -91,8 +94,107 @@ $this->registerJs(
             }).always(function() {
                 btn.button('reset');
             });
-            
-        });        
+
+        });
+    "
+);
+
+$this->registerJs(
+    /** @lang JavaScript */
+    "
+
+       /** Select2 with clear init */
+       $('#denied_roles_form .select2-clear').select2({
+           minimumResultsForSearch: -1,
+           allowClear: true,
+           width : '100%'
+       });
+
+       /** Select2 with search */
+       $('#denied_roles_form .select2-search').select2({
+           width : '100%'
+       });
+
+       /** Select with minimum and clear init */
+       $('#denied_roles_form .select2-min').select2({
+           minimumInputLength: 4,
+           allowClear: true,
+           width: '100%'
+       });
+
+       /** Node search form submit and reload gridview */
+        $('.role-search-form form').submit(function(e) {
+            e.stopImmediatePropagation(); // Prevent double submit
+            gridLaddaSpinner('spin_btn'); // Show button spinner while search in progress
+            $.pjax.reload({container:'#node-pjax', url: window.location.pathname + '?' + $(this).serialize(), timeout: 10000}); // Reload GridView
+            return false;
+        });
+
+        /** Init JS on document:ready and pjax:end */
+        $(document).on('ready pjax:end', function() {
+
+            /** Init iCheck */
+            $('.set-node-box').iCheck({
+                checkboxClass: 'icheckbox_minimal-green'
+            }).on('ifChanged', function (event) {
+                $(event.target).trigger('change');
+            });
+
+            /** Check/uncheck all nodes on page */
+            $('#check_all_box').change(function() {
+                if ($('#check_all_box').is(':checked')) {
+                    $('.check_node_box').prop('checked', true).iCheck('update');
+                } else {
+                    $('.check_node_box').prop('checked', false).iCheck('update');
+                }
+            });
+
+            /** Check/uncheck check all box based on node checked values */
+            $('.check_node_box').change(function() {
+                var input = $('.check_node_box');
+                if(input.length === input.filter(':checked').length){
+                    $('#check_all_box').prop('checked', true).iCheck('update');
+                } else {
+                    $('#check_all_box').prop('checked', false).iCheck('update');
+                }
+            }).change();
+
+        });
+
+        /** Submit assign form */
+        $(document).on('submit', '#assign_form', function (e) {
+            e.stopImmediatePropagation(); // Prevent double submit
+
+            var form     = $(this);
+            var btn_lock = Ladda.create(document.querySelector('#assign_btn'));
+
+            //noinspection JSUnusedGlobalSymbols
+            /** Submit form */
+            $.ajax({
+                url    : form.attr('action'),
+                type   : 'post',
+                data   : form.serialize(),
+                beforeSend: function() {
+                    btn_lock.start();
+                },
+                success: function (data) {
+                    if (isJson(data)) {
+                        showStatus(data);
+                    } else {
+                        toastr.warning(data, '', {timeOut: 0, closeButton: true});
+                    }
+                    $.pjax.reload({container: '#node-pjax', url: $(location).attr('href'), timeout: 10000});
+                },
+                error : function (data) {
+                    toastr.error(data.responseText, '', {timeOut: 0, closeButton: true});
+                }
+            }).always(function(){
+                btn_lock.stop();
+            });
+
+            return false;
+        });
+
     "
 );
 ?>
@@ -246,5 +348,14 @@ $this->registerJs(
             </table>
         </div>
     </div>
+    <?php if(isset($searchModel)): ?>
+    <?php
+        echo $this->render('_denied_roles_form', [
+            'model'               => $model,
+            'searchModel'         => $searchModel,
+            'data'                => $data,
+            'dataProvider'        => $dataProvider,
+            ]);
+        ?>
+    <?php endif; ?>
 </div>
-

@@ -35,6 +35,7 @@ use yii\bootstrap\ActiveForm;
  */
 $this->title = Yii::t('app', 'Dashboard');
 $this->params['breadcrumbs'][] = Yii::t('app', 'Dashboard');
+$user = Yii::$app->getUser();
 
 $backup    = [];
 $discovery = [];
@@ -49,7 +50,11 @@ if( isset($dashboard_stats['backup']->message) ) {
 }
 ?>
 <div class="row">
+    <?php if($user->can('admin')): ?>
     <div class="col-xs-12 col-lg-7">
+    <?php else: ?>
+    <div class="col-xs-12 col-lg-12">
+    <?php endif ?>
         <div class="box">
             <div class="box-header"><i class="fa fa-tasks"></i>
                 <h3 class="box-title"><?= Yii::t('node', 'Nodes') ?></h3>
@@ -114,7 +119,7 @@ if( isset($dashboard_stats['backup']->message) ) {
     </div>
 
     <div class="col-xs-12 col-lg-5">
-
+        <?php if($user->can('admin')): ?>
         <div class="box box-default" style="margin-bottom: 30px">
             <div class="box-header">
                 <h3 class="box-title"><i class="fa fa-bar-chart"></i> <?= Yii::t('app', 'Statistics') ?></h3>
@@ -229,6 +234,7 @@ if( isset($dashboard_stats['backup']->message) ) {
             </table>
         </div>
 
+
         <div class="nav-tabs-custom box box-default dashboard-logs">
             <ul class="nav nav-tabs pull-right ui-sortable-handle" style="margin-top: -3px">
                 <li class="active"><a href="#nodes-logs" data-toggle="tab" aria-expanded="true"><?= Yii::t('node', 'Nodes') ?></a></li>
@@ -329,7 +335,7 @@ if( isset($dashboard_stats['backup']->message) ) {
                 </div>
             </div>
         </div>
-
+        <?php endif; ?>
     </div>
 
 </div>

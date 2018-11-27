@@ -37,6 +37,9 @@ $lang = array(
     'User assignments was successfully added' => 'User assignments was successfully added',
     'You cannot delete system authorization item <b>{0}</b>!' => 'You cannot delete system authorization item <b>{0}</b>!',
     'You cannot remove system assignment <b>{0}</b> from system user!' => 'You cannot remove system assignment <b>{0}</b> from system user!',
+
+    'Denied nodes' => 'Denied nodes',
+    'Assign roles' => 'Assign roles',
 );
 
 return $lang;

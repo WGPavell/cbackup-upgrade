@@ -51,6 +51,8 @@ use app\components\NetSsh;
 use Diff;
 use Diff_Renderer_Html_Inline;
 use yii\web\ForbiddenHttpException;
+use app\models\AuthItemNode;
+use app\models\search\RoleSearch;
 
 
 /**
@@ -96,6 +98,7 @@ class NodeController extends Controller
                     'ajax-backup-node',
                     'ajax-set-node-credentials',
                     'ajax-protect-node',
+                    'ajax-assign-roles',
                 ]
             ],
             'access' => [
@@ -111,13 +114,9 @@ class NodeController extends Controller
                     'roles' => ['@']
                   ],
                   [
-                    'actions' => ['view'],
-                    'allow' => true,
+                    'actions' => ['view', 'ajax-download', 'ajax-ospf-download', 'ajax-load-config', 'ajax-load-file-diff', 'ajax-load-ospf', 'ajax-load-ospf-diff', 'ajax-load-widget', 'download'],
+                    'allow' => Node::isUserAllowed(Yii::$app->request->get('id')),
                     'roles' => ['@'],
-                    'matchCallback' => function ($rule, $action) {
-                        //access to Node
-                        return Node::isUserAllowed(Yii::$app->request->get('id'), Yii::$app->authManager->getRolesByUser(Yii::$app->user->getId()));
-                    }
                   ]
               ],
             ],
@@ -214,6 +213,10 @@ class NodeController extends Controller
 
         $model = $this->findModel($id);
 
+        $deniedRoles  = new RoleSearch();
+        $dataProvider = $deniedRoles->search(Yii::$app->request->queryParams);
+        $deniedRoles->node_id = $id;
+
         /** Prevent user from changing automatically added nodes */
         if ($model->manual == 0) {
             \Y::flashAndRedirect('warning', Yii::t('node', 'Edit automatically added nodes is forbidden!'), '/node/list');
@@ -241,8 +244,75 @@ class NodeController extends Controller
             'model'       => $model,
             'networks'    => Network::find()->select('network')->indexBy('id')->asArray()->column(),
             'credentials' => Credential::find()->select('name')->indexBy('id')->asArray()->column(),
-            'devices'     => ArrayHelper::map(Device::find()->all(), 'id', 'model', 'vendor')
+            'devices'     => ArrayHelper::map(Device::find()->all(), 'id', 'model', 'vendor'),
+            'searchModel' => $deniedRoles,
+            'data'        => $dataProvider->getModels(),
+            'dataProvider'=> $dataProvider,
         ]);
+
+    }
+
+    /**
+     * Assign roles to node via Ajax
+     *
+     * @return string
+     */
+    public function actionAjaxAssignRoles()
+    {
+
+        $msg_status = 'error';
+        $msg_text   = Yii::t('app', 'An error occurred while processing your request');
+
+        $save_status   = [];
+        $delete_status = [];
+
+        if (Yii::$app->request->isAjax && isset($_POST['Role'])) {
+
+            $_post = $_POST['Role'];
+
+            foreach ($_post as $role_name => $data) {
+
+                /** Find record in AuthItemNode */
+                $record = AuthItemNode::find()->where(['node_id' => $data['node_id'], 'auth_item_name' => $role_name]);
+
+                /** Add new record if it doesn't exists and set_node is set 1 */
+                if (!$record->exists() && $data['set_role'] == '1') {
+                    $model                 = new AuthItemNode();
+                    $model->node_id        = $data['node_id'];
+                    $model->auth_item_name = $role_name;
+                    $save_status[]         = ($model->save()) ? true : false;
+                }
+                else {
+                    $save_status[] = true;
+                }
+
+                /** Remove record if it exists and set node is set to 0 */
+                if ($record->exists() && $data['set_role'] == '0') {
+                    try {
+                        $record->one()->delete();
+                        $delete_status[] = true;
+                    }
+                    /** @noinspection PhpUndefinedClassInspection */
+                    catch (\Throwable $e) {
+                        $delete_status[] = false;
+                    }
+                }
+                else {
+                    $delete_status[] = true;
+                }
+
+            }
+
+            /** Check if all save and remove requests return true if at least one return false show error */
+            if ((!empty($save_status) && in_array(false, $save_status, true) === false) &&
+                (!empty($delete_status) && in_array(false, $delete_status, true) === false)) {
+                $msg_status = 'success';
+                $msg_text   = Yii::t('app', 'Action successfully finished');
+            }
+
+        }
+
+        return Json::encode(['status' => $msg_status, 'msg' => $msg_text]);
 
     }
 
@@ -587,7 +657,7 @@ class NodeController extends Controller
      * @param  string|null $hash
      * @return string
      */
-    public function actionAjaxDownload($id, $put, $hash = null, $directory)
+    public function actionAjaxDownload($id, $put, $hash = null, $directory = "backup")
     {
         return $this->renderPartial('_download_modal', [
             'id'   => $id,

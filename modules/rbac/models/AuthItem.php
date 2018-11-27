@@ -25,6 +25,7 @@ use Yii;
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
 use yii\helpers\ArrayHelper;
+use yii\data\ActiveDataProvider;
 
 
 /**
@@ -74,6 +75,13 @@ class AuthItem extends ActiveRecord
      * @var array
      */
     public $_children;
+
+    /**
+     * Default page size
+     *
+     * @var int
+     */
+    public $page_size = 20;
 
     /**
      * @var \yii\rbac\ManagerInterface
@@ -138,6 +146,7 @@ class AuthItem extends ActiveRecord
             'updated_at'  => Yii::t('rbac', 'Updated At'),
             'roles'       => Yii::t('rbac', 'Roles'),
             'permissions' => Yii::t('rbac', 'Permissions'),
+            'page_size'   => Yii::t('app', 'Page size'),
         ];
     }
 

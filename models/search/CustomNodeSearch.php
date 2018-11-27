@@ -20,10 +20,11 @@
 namespace app\models\search;
 
 use yii\base\Model;
-use yii\data\ArrayDataProvider;
+use yii\data\ActiveDataProvider;
 use app\models\Node;
 use app\models\TasksHasNodes;
 use app\models\Exclusion;
+use app\models\AuthItemNode;
 
 
 /**
@@ -34,6 +35,7 @@ class CustomNodeSearch extends Node
 {
 
     public $task_name;
+    public $role_name;
 
     /**
      * @inheritdoc
@@ -60,7 +62,7 @@ class CustomNodeSearch extends Node
      *
      * @param array $params
      *
-     * @return ArrayDataProvider
+     * @return ActiveDataProvider
      */
     public function search($params)
     {
@@ -85,21 +87,53 @@ class CustomNodeSearch extends Node
             ->andFilterWhere(['like', 'hostname', $this->hostname])
             ->andFilterWhere(['like', 'location', $this->location]);
 
-        $data = [];
+        if (!empty(array_filter($this->attributes)))
+            $query->orderBy('network_id');
 
-        if (!empty(array_filter($this->attributes))) {
+        $provider = new ActiveDataProvider([
+            'query'  => $query,
+        ]);
 
-            $data = $query->orderBy('network_id')->asArray()->all();
+        /** Set page size dynamically */
+        $provider->pagination->pageSize = $this->page_size;
 
-            foreach ($data as $key => $entry) {
-                $task_exists = TasksHasNodes::find()->where(['node_id' => $entry['id'], 'task_name' => $params['task_name']])->exists();
-                $data[$key] += ($task_exists) ? ['node_has_task' => true] : ['node_has_task' => false];
-            }
+        return $provider;
 
-        }
+    }
 
-        $provider = new ArrayDataProvider([
-            'allModels'  => $data,
+    /**
+     * Creates data provider instance with search query applied
+     *
+     * @param array $params
+     *
+     * @return ActiveDataProvider
+     */
+    public function searchByRole($params)
+    {
+        /** Get array of exclusions */
+        $exclusions = Exclusion::find()->select('ip')->asArray()->all();
+        $query      = Node::find()->select('node.id, ip, node.network_id, device_id, hostname, location');
+
+        $query->joinWith(['network n', 'device d']);
+
+        $this->load($params);
+
+        /** Exclude nodes from search query */
+        $query->andFilterWhere(['not in', 'ip', $exclusions]);
+
+        $query->andFilterWhere([
+            'network_id' => $this->network_id,
+            'device_id'  => $this->device_id,
+        ]);
+
+        $query->andFilterWhere(['like', 'ip', $this->ip])
+            ->andFilterWhere(['like', 'hostname', $this->hostname])
+            ->andFilterWhere(['like', 'location', $this->location]);
+
+        $query->orderBy('network_id');
+
+        $provider = new ActiveDataProvider([
+            'query'  => $query,
         ]);
 
         /** Set page size dynamically */

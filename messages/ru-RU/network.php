@@ -391,6 +391,9 @@ $lang = array(
     // from /modules/network/controllers/TaskController.php
     'Database' => 'База данных',
     'File storage' => 'Файловое хранилище',
+
+    'Denied for roles' => 'Запрещено для ролей',
+    'Role' => 'Роль',
 );
 
 return $lang;

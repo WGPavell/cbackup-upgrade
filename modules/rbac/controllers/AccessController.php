@@ -28,6 +28,10 @@ use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use app\modules\rbac\models\AuthItem;
 use app\modules\rbac\models\AuthItemSearch;
+use app\models\search\CustomNodeSearch;
+use app\models\Device;
+use app\models\Network;
+use app\models\AuthItemNode;
 
 
 /**
@@ -133,6 +137,18 @@ class AccessController extends Controller
 
         $model = $this->findModel($name);
 
+        $deniedNodes  = new CustomNodeSearch();
+        $dataProvider = $deniedNodes->searchByRole(Yii::$app->request->queryParams);
+        $deniedNodes->role_name = $name;
+        $data = $dataProvider->getModels();
+
+        $roleHasNodes = [];
+
+        foreach ($data as $key => $entry) {
+            $denied_exists = AuthItemNode::find()->where(['node_id' => $entry['id'], 'auth_item_name' => Yii::$app->request->queryParams['name']])->exists();
+            $roleHasNodes[$entry->id] = ($denied_exists) ? true : false;
+        }
+
         if (isset($_POST['AuthItem'])) {
 
             if ($model->load(Yii::$app->request->post())) {
@@ -177,11 +193,82 @@ class AccessController extends Controller
         }
 
         return $this->render('_edit_form', [
-            'model'        => $model,
-            'item_name'    => $model->getAuthItemReadable(),
-            'roles'        => $model->getAllRoles(),
-            'permissions'  => $model->getAllPermissions()
+            'model'         => $model,
+            'item_name'     => $model->getAuthItemReadable(),
+            'roles'         => $model->getAllRoles(),
+            'permissions'   => $model->getAllPermissions(),
+            'data'          => $data,
+            'dataProvider'  => $dataProvider,
+            'searchModel'   => $deniedNodes,
+            'devices_list'  => ArrayHelper::map(Device::find()->all(), 'id', 'model', 'vendor'),
+            'networks_list' => Network::find()->select('network')->indexBy('id')->asArray()->column(),
+            'name'          => $name,
+            'roleHasNodes'  => $roleHasNodes,
         ]);
+
+    }
+
+    /**
+     * Assign nodes to role via Ajax
+     *
+     * @return string
+     */
+    public function actionAjaxAssignNodes()
+    {
+
+        $msg_status = 'error';
+        $msg_text   = Yii::t('app', 'An error occurred while processing your request');
+
+        $save_status   = [];
+        $delete_status = [];
+
+        if (Yii::$app->request->isAjax && isset($_POST['NodeRoles'])) {
+
+            $_post = $_POST['NodeRoles'];
+
+            foreach ($_post as $node_id => $data) {
+
+                /** Find record in AuthItemNode */
+                $record = AuthItemNode::find()->where(['node_id' => $node_id, 'auth_item_name' => $data['role_name']]);
+
+                /** Add new record if it doesn't exists and set_node is set 1 */
+                if (!$record->exists() && $data['set_node'] == '1') {
+                    $model                 = new AuthItemNode();
+                    $model->node_id        = $node_id;
+                    $model->auth_item_name = $data['role_name'];
+                    $save_status[]         = ($model->save()) ? true : false;
+                }
+                else {
+                    $save_status[] = true;
+                }
+
+                /** Remove record if it exists and set node is set to 0 */
+                if ($record->exists() && $data['set_node'] == '0') {
+                    try {
+                        $record->one()->delete();
+                        $delete_status[] = true;
+                    }
+                    /** @noinspection PhpUndefinedClassInspection */
+                    catch (\Throwable $e) {
+                        $delete_status[] = false;
+                    }
+                }
+                else {
+                    $delete_status[] = true;
+                }
+
+            }
+
+            /** Check if all save and remove requests return true if at least one return false show error */
+            if ((!empty($save_status) && in_array(false, $save_status, true) === false) &&
+                (!empty($delete_status) && in_array(false, $delete_status, true) === false)) {
+                $msg_status = 'success';
+                $msg_text   = Yii::t('app', 'Action successfully finished');
+            }
+
+        }
+
+        return Json::encode(['status' => $msg_status, 'msg' => $msg_text]);
 
     }
 

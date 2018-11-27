@@ -391,6 +391,9 @@ $lang = array(
     // from /modules/network/controllers/TaskController.php
     'Database' => 'Database',
     'File storage' => 'File storage',
+
+    'Denied for roles' => 'Denied for roles',
+    'Role' => 'Role',
 );
 
 return $lang;

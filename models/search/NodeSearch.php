@@ -25,6 +25,7 @@ use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use yii\db\Expression;
 use Yii;
+use app\models\AuthItemNode;
 
 
 /**
@@ -78,23 +79,23 @@ class NodeSearch extends Node
      */
     public function search($params)
     {
-        /* $user_roles = Yii::$app->authManager->getRolesByUser(Yii::$app->user->getId());
-
-        $roles_names = [];
-        foreach($user_roles as $role){
-             $roles_names[] = $role->name;
-        }
-
-        $deniedNodes = (new Query())
-            ->select(['auth_item_name'])
-            ->from('{{auth_item_node}}')
-            ->where(['auth_item_name' => $roles_names])
-            ->exists(); */
 
         if(Yii::$app->User->can('admin'))
           $query = Node::find();
-        else
-          $query = Node::find()->joinWith('deniedNodes a', true)->where('`node_id` IS NULL');
+        else {
+          $roles_names = [];
+          foreach(Yii::$app->authManager->getRolesByUser(Yii::$app->user->getId()) as $role) {
+               foreach(Yii::$app->authManager->getChildRoles($role->name) as $child_role) {
+                 if(!in_array($child_role->name, $roles_names))
+                  $roles_names[] = $child_role->name;
+               }
+          }
+          foreach(Yii::$app->authManager->getPermissionsByUser(Yii::$app->user->getId()) as $permission)
+            $roles_names[] = $permission->name;
+
+          $subQuery = AuthItemNode::find()->select('node_id')->where(['in', 'auth_item_name', $roles_names])->andWhere('node_id=node.id');
+          $query = Node::find()->where(['not exists', $subQuery]);
+        }
 
         $query->joinWith(['device d']);
 

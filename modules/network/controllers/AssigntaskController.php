@@ -440,14 +440,23 @@ class AssigntaskController extends Controller
         $searchModel  = new CustomNodeSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
         $searchModel->task_name = $task_name;
+        $data = $dataProvider->getModels();
+
+        $nodeHasTasks = [];
+
+        foreach ($data as $key => $entry) {
+            $task_exists = TasksHasNodes::find()->where(['node_id' => $entry->id, 'task_name' => Yii::$app->request->queryParams['task_name']])->exists();
+            $nodeHasTasks[$entry->id] = ($task_exists) ? true : false;
+        }
 
         return $this->render('adv_node_assign', [
             'searchModel'   => $searchModel,
             'dataProvider'  => $dataProvider,
-            'data'          => $dataProvider->getModels(),
+            'data'          => $data,
             'networks_list' => Network::find()->select('network')->indexBy('id')->asArray()->column(),
             'devices_list'  => $this->devices_list,
-            'tasks_list'    => $this->tasks_list
+            'tasks_list'    => $this->tasks_list,
+            'nodeHasTasks'  => $nodeHasTasks,
         ]);
 
     }
