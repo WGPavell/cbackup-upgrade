@@ -5,3 +5,4 @@ config/db.php
 config/install.php
 config/settings.ini
 data/
+.oracle_jre_usage/
