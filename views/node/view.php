@@ -304,6 +304,10 @@ $user = Yii::$app->getUser();
                         <td><?= (isset($data->contact)) ? $data->contact : Yii::t('yii', '(not set)') ?></td>
                     </tr>
                     <tr>
+                        <th><?= Yii::t('app', 'Created') ?></th>
+                        <td><?= (isset($data->created)) ? $data->created : Yii::t('yii', '(not set)') ?></td>
+                    </tr>
+                    <tr>
                         <th><?= Yii::t('node', 'Last seen') ?></th>
                         <td>
                             <?php /** @noinspection PhpUnhandledExceptionInspection */

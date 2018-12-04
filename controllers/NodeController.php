@@ -925,6 +925,75 @@ class NodeController extends Controller
         return Json::encode($response);
     }
 
+    public function actionUpdateNodesDb() {
+      $csv = Yii::getAlias('@webroot').'/output.csv';
+      $device_data = ['D-link' => ['device_id' => [3, 7, 9, 11, 12, 13, 14, 15, 16, 18, 20, 21, 22, 23, 24, 25, 27, 29, 30, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42], 'credentials_id' => 3],
+                      'Huawei' => ['device_id' => [1, 8, 17, 19, 26], 'credentials_id' => 1],
+                      'Orion'  => ['device_id' => [4], 'credentials_id' => 4],
+                      'SNR'    => ['device_id' => [2], 'credentials_id' => 2],
+                      'Cisco'  => ['device_id' => [10], 'credentials_id' => 7]];
+
+      $zabbix_db = [];
+
+      if (($handle = fopen($csv, 'r')) !== false) {
+        while (($row = fgetcsv($handle, 1000)) !== false) {
+          $zabbix_db[] = $row[1];
+        }
+      }
+
+      $nodes = Node::find()->all();
+      $i = 0;
+
+      foreach($nodes as $node) {
+        if(in_array($node->ip, $zabbix_db)) {
+          $i++;
+          echo $node->ip."<br>";
+        }
+      }
+
+      echo $i;
+
+      /*if (($handle = fopen($csv, 'r')) !== false) {
+          $i = 0; $j = 0;
+          echo "<html><body><div>";
+          //rows: 0 - hostname, 1 - ip, 2 - device
+          while (($row = fgetcsv($handle, 1000)) !== false) {
+            $model = Node::findOne(['ip' => $row[1]]);
+            if(!empty($model)) {
+              if(!in_array($model->device_id, $device_data[$row[2]]['device_id'])) {
+                //echo "'".$model->ip."', ";
+                $i++;
+              }
+            } else {
+              echo $row[0]." ".$row[1]." ".$row[2]."<br>";
+              $j++;
+            }
+          }
+          echo "</div><br>".$i." ".$j;
+          fclose($handle);
+      }*/
+      /*if (($handle = fopen($csv, 'r')) !== false) {
+          $i = 0;
+          $j = 0;
+          echo "<pre>";
+          //rows: 0 - hostname, 1 - ip, 2 - device
+          while (($row = fgetcsv($handle, 1000)) !== false) {
+            $model = Node::findOne(['hostname' => $row[0]]);
+            if(!empty($model)) {
+              if($model->hostname !== $row[0]) {
+                echo $model->hostname." ".$model->ip." ".$row[1]." ".$model->device_id." ".$device_data[$row[2]]['device_id']."\n";
+                $i++;
+              }
+            }
+            else $j++;
+          }
+          echo "\n".$i." ".$j;
+          fclose($handle);
+      } */
+
+        exit();
+    }
+
 
     /**
      * Finds the Node model based on its primary key value.
