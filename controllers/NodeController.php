@@ -945,7 +945,7 @@ class NodeController extends Controller
       $i = 0;
 
       foreach($nodes as $node) {
-        if(in_array($node->ip, $zabbix_db)) {
+        if(!in_array($node->ip, $zabbix_db)) {
           $i++;
           echo $node->ip."<br>";
         }

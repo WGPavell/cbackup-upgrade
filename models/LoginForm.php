@@ -130,6 +130,7 @@ class LoginForm extends Model
     {
         if ($this->_user === false) {
             $this->_user = User::findIdentity($this->username);
+            $this->_user->touch('last_login'); // Datatable column name that you want to update the time
         }
         return $this->_user;
     }

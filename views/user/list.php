@@ -48,7 +48,7 @@ $this->registerJs(/** @lang JavaScript */"
                 toastr.success(i18next.t('Token copied to clipboard'), '', {timeOut: 5000, progressBar: true, closeButton: true});
             }
         });
-       
+
         clipboard.on('error', function(e) {
             toastr.warning(i18next.t('Error while copying token'), '', {closeButton: true});
         });
@@ -92,7 +92,13 @@ $this->registerJs(/** @lang JavaScript */"
                                     'format'        => 'raw',
                                     'attribute'     => 'access_token',
                                     'enableSorting' => false,
-                                    'value'         => function($data) { /** @var $data \app\models\User */ return $data->renderToken(); },
+                                    'value'         => function($data) { /** @var $data \app\models\User */ $data->renderToken(); },
+                                ],
+                                [
+                                    'attribute'     => 'last_login',
+                                ],
+                                [
+                                    'attribute'     => 'last_visit',
                                 ],
                                 [
                                     'class'          => 'yii\grid\ActionColumn',

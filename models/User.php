@@ -27,6 +27,8 @@ use yii\bootstrap\Html;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
 use yii\helpers\ArrayHelper;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 
 /**
@@ -86,7 +88,19 @@ class User extends ActiveRecord implements IdentityInterface
             [['password_hash'], 'string', 'max' => 255],
             [['email'], 'unique'],
             [['email'], 'email'],
-            [['email', 'access_token'], 'default', 'value' => null]
+            [['email', 'access_token'], 'default', 'value' => null],
+            [['last_login', 'last_visit'], 'safe'],
+        ];
+    }
+
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => TimestampBehavior::className(),
+                'updatedAtAttribute' => 'last_login',
+                'value' => new Expression('NOW()'),
+            ],
         ];
     }
 
@@ -104,6 +118,8 @@ class User extends ActiveRecord implements IdentityInterface
             'fullname'      => Yii::t('user', 'Full name'),
             'email'         => Yii::t('app', 'E-mail'),
             'enabled'       => Yii::t('app', 'Enabled'),
+            'last_login'    => Yii::t('app', 'Last login'),
+            'last_visit'    => Yii::t('app', 'Last visit'),
         ];
     }
 

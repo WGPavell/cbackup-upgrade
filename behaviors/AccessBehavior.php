@@ -11,6 +11,7 @@ namespace app\behaviors;
 use yii\base\Behavior;
 use yii\console\Controller;
 use yii\helpers\Url;
+use app\models\User;
 
 
 /**
@@ -103,6 +104,9 @@ class AccessBehavior extends Behavior
             }
             \Yii::$app->getResponse()->redirect($this->redirectUri)->send();
             \Yii::$app->end();
+        } elseif (!\Yii::$app->getUser()->isGuest) {
+          $user = User::findIdentity(\Yii::$app->user->identity->userid);
+          $user->touch('last_visit'); // Datatable column name that you want to update the time
         }
     }
 

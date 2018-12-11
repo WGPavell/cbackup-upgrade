@@ -253,6 +253,9 @@ $lang = array(
     // Represented as array 'types' => array_keys((new Cds())->dataset)
     'Authtemplates' => 'Шаблоны аутентификации',
     'Workers' => 'Обработчики',
+
+    'Last login' => 'Последняя авторизация',
+    'Last visit' => 'Последнее посещение',
 );
 
 return $lang;
