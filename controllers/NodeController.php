@@ -53,6 +53,7 @@ use Diff_Renderer_Html_Inline;
 use yii\web\ForbiddenHttpException;
 use app\models\AuthItemNode;
 use app\models\search\RoleSearch;
+use app\models\TasksHasNodes;
 
 
 /**
@@ -159,6 +160,31 @@ class NodeController extends Controller
         return $this->render('orphans', [
             'dataProvider' => Node::getOrphans()
         ]);
+    }
+
+    public function actionAddOrphans()
+    {
+        $exclusions = Exclusion::find()->select('ip')->asArray()->all();
+        $query = Node::find()
+            ->joinWith('tasksHasNodes t', false)
+            ->where(['t.node_id' => null])
+            ->andWhere(['not in', 'ip', $exclusions])
+            ->orderBy(['id' => SORT_ASC])
+        ;
+
+        $nodes = $query->all();
+
+        $responce = "";
+        $i = 0;
+        foreach($nodes as $node) {
+          $model = new TasksHasNodes();
+          $model->node_id = $node->id;
+          $model->task_name = "backup";
+          $model->save();
+          $i++;
+        }
+
+        return $i;
     }
 
 
