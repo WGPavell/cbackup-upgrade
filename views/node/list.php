@@ -47,7 +47,7 @@ $this->registerJs(
             width: '100%',
             minimumResultsForSearch: -1
         });
-        
+
         /** Init select2 with search */
         $('.select2-search').select2({
             width: '100%',
@@ -59,7 +59,7 @@ $this->registerJs(
             $('.node-search').slideToggle('slow');
             return false;
         });
-        
+
         /** Node search form submit and reload gridview */
         $('.node-search-form form').submit(function(e) {
             e.stopImmediatePropagation(); // Prevent double submit
